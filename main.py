@@ -53,7 +53,7 @@ class CycleGAN():
         self.image_A/self.image_B -> Input image with each values ranging from [-1,1]
         '''
 
-        filenames_A = tf.train.match_filenames_once("./input/horse2zebra/trainA/*.jpg")    
+        filenames_A = tf.train.match_filenames_once("./input/horse2zebra/trainA/*.jpg")
         self.queue_length_A = tf.size(filenames_A)
         filenames_B = tf.train.match_filenames_once("./input/horse2zebra/trainB/*.jpg")    
         self.queue_length_B = tf.size(filenames_B)
@@ -96,20 +96,19 @@ class CycleGAN():
 
         for i in range(max_images): 
             image_tensor = sess.run(self.image_A)
-            if(image_tensor.size() == img_size*batch_size*img_layer):
-                self.A_input[i] = image_tensor.reshape((batch_size,img_height, img_width, img_layer))
-
+            total_size = sess.run(tf.size(image_tensor))
+            if(total_size == img_size*batch_size*img_layer):
+                self.A_input[i] = sess.run(tf.reshape(image_tensor,(batch_size,img_height, img_width, img_layer)))
+            
         for i in range(max_images):
             image_tensor = sess.run(self.image_B)
-            if(image_tensor.size() == img_size*batch_size*img_layer):
-                self.B_input[i] = image_tensor.reshape((batch_size,img_height, img_width, img_layer))
+            total_size = sess.run(tf.size(image_tensor))
+            if(total_size == img_size*batch_size*img_layer):
+                self.B_input[i] = sess.run(tf.reshape(image_tensor, (batch_size,img_height, img_width, img_layer)))
 
 
         coord.request_stop()
         coord.join(threads)
-
-
-
 
     def model_setup(self):
 
@@ -227,7 +226,6 @@ class CycleGAN():
             else :
                 return fake
 
-
     def train(self):
 
 
@@ -244,7 +242,8 @@ class CycleGAN():
         self.loss_calc()
       
         # Initializing the global variables
-        init = tf.global_variables_initializer()
+        #init = tf.global_variables_initializer()
+        init = (tf.global_variables_initializer(), tf.local_variables_initializer())
         saver = tf.train.Saver()     
 
         with tf.Session() as sess:
@@ -327,8 +326,8 @@ class CycleGAN():
 
         self.model_setup()
         saver = tf.train.Saver()
-        init = tf.global_variables_initializer()
-
+        #init = tf.global_variables_initializer()
+        init = (tf.global_variables_initializer(), tf.local_variables_initializer())
         with tf.Session() as sess:
 
             sess.run(init)
